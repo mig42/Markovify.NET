@@ -1,11 +1,11 @@
 @{
   PSDependOptions = @{
     Target = 'CurrentUser'
-  };
-  'psake' = @{
+  }
+  'psake'         = @{
     Version = '4.8.0'
-  };
-  'BuildHelpers' = @{
+  }
+  'BuildHelpers'  = @{
     Version = '2.0.8'
   }
 }
