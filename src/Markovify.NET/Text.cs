@@ -46,8 +46,9 @@ namespace Markovify.NET
             Regex rejectExpression = null)
         {
             mbIsWellFormed = isWellFormed;
-            if (mbIsWellFormed)
-                mRejectExpression = rejectExpression;
+            mRejectExpression = mbIsWellFormed && rejectExpression != null
+                ? rejectExpression
+                : new Regex(@"(^')|('$)|\s'|'\s|[""(\(\)\[\])]", RegexOptions.Compiled);
 
             bool canMakeSentences = parsedSentences != null || !string.IsNullOrEmpty(inputText);
             mbRetainOriginal = retainOriginal && canMakeSentences;
