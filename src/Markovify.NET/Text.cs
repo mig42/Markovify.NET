@@ -45,7 +45,6 @@ namespace Markovify.NET
         [JsonProperty("chain")]
         public Chain Chain { get; set; }
 
-
         [JsonProperty("sourceText")]
         public string SourceText { get; set; }
 
