@@ -105,7 +105,7 @@ namespace Markovify.NET
         {
             return Split.IntoSentences(inputText)
                 .Where(TestSentenceInput)
-                .Select(sentence => mWordSplitPattern.Split(sentence));
+                .Select(Split.IntoWords);
         }
 
         /// <summary>
@@ -130,8 +130,5 @@ namespace Markovify.NET
         readonly IEnumerable<IEnumerable<string>> mParsedSentences;
         readonly string mRejoinedText;
         readonly Chain mChain;
-
-        static readonly Regex mWordSplitPattern = new Regex(
-            @"\s+", RegexOptions.Compiled);
     }
 }
