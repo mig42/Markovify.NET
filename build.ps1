@@ -13,7 +13,10 @@ param(
 
   # List available build tasks
   [parameter(ParameterSetName = 'Help')]
-  [switch]$Help
+  [switch]$Help,
+
+  # Optional properties to pass to psake
+  [hashtable]$Properties
 )
 
 $ErrorActionPreference = 'Stop'
@@ -28,8 +31,8 @@ if ($PSCmdlet.ParameterSetName -eq 'Help') {
   Get-PSakeScriptTasks -buildFile $psakeFile |
     Format-Table -Property Name, Description, Alias, DependsOn
 } else {
-  Set-BuildEnvironment -Force
+  Set-BuildEnvironment -Force -BuildOutput "$PSScriptRoot/artifacts"
 
-  Invoke-psake -buildFile $psakeFile -taskList $Task -nologo
+  Invoke-psake -buildFile $psakeFile -taskList $Task -nologo -properties $Properties
   exit ([int](-not $psake.build_success))
 }
