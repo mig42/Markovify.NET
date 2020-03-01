@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Newtonsoft.Json;
 
 namespace Markovify.NET
 {
@@ -34,39 +36,48 @@ namespace Markovify.NET
     ///   If <paramref name="isWellFormed" /> is <c>true</c>, this can be provided to override
     ///   the standard rejection pattern.
     /// </param>
-    class Text
+    public class Text
     {
-        public Text(
+        [DefaultValue(2)]
+        [JsonProperty("stateSize")]
+        public int StateSize { get; set; } = 2;
+
+        [JsonProperty("chain")]
+        public Chain Chain { get; set; }
+
+
+        [JsonProperty("sourceText")]
+        public string SourceText { get; set; }
+
+        [JsonProperty("isWellFormed")]
+        public bool IsWellFormed { get; set; }
+
+        [JsonProperty("rejectExpression")]
+        public Regex RejectExpression { get; set; } = DefaultRejectExpression;
+
+        public static Text Build(
             string inputText,
             int stateSize = 2,
-            Chain chain = null,
-            IEnumerable<IEnumerable<string>> parsedSentences = null,
-            bool retainOriginal = false,
+            bool retainOriginal = true,
             bool isWellFormed = true,
             Regex rejectExpression = null)
         {
-            mbIsWellFormed = isWellFormed;
-            mRejectExpression = mbIsWellFormed && rejectExpression != null
-                ? rejectExpression
-                : new Regex(@"(^')|('$)|\s'|'\s|[""(\(\)\[\])]", RegexOptions.Compiled);
+            if (rejectExpression == null && isWellFormed)
+                rejectExpression = DefaultRejectExpression;
 
-            bool canMakeSentences = parsedSentences != null || !string.IsNullOrEmpty(inputText);
-            mbRetainOriginal = retainOriginal && canMakeSentences;
-            mbStateSize = stateSize;
+            IEnumerable<IEnumerable<string>> corpus = GenerateCorpus(
+                inputText, isWellFormed ? rejectExpression : null);
 
-            if (mbRetainOriginal)
+            return new Text
             {
-                mParsedSentences = parsedSentences ?? GenerateCorpus(inputText);
-
-                // Rejoined text lets us assess the novelty of generated sentences
-                mRejoinedText = string.Join(
-                    " ", mParsedSentences.Select(words => string.Join(" ", words)));
-                mChain = chain ?? new Chain(mParsedSentences, stateSize);
-                return;
-            }
-
-            mChain = chain ?? new Chain(
-                parsedSentences ?? GenerateCorpus(inputText), stateSize);
+                Chain = new Chain(corpus, stateSize),
+                StateSize = stateSize,
+                IsWellFormed = isWellFormed,
+                RejectExpression = rejectExpression,
+                SourceText = retainOriginal && corpus.Count() > 0 && !string.IsNullOrEmpty(inputText)
+                    ? string.Join(" ", corpus.Select(words => string.Join(" ", words)))
+                    : null
+            };
         }
 
         /// <summary>
@@ -80,18 +91,18 @@ namespace Markovify.NET
         {
             if (inPlace)
             {
-                mChain.Compile(true);
+                Chain.Compile(true);
                 return this;
             }
 
-            return new Text(
-                null,
-                mbStateSize,
-                mChain.Compile(false),
-                mParsedSentences,
-                mbRetainOriginal,
-                mbIsWellFormed,
-                mRejectExpression);
+            return new Text
+            {
+                Chain = Chain.Compile(false),
+                StateSize = StateSize,
+                SourceText = SourceText,
+                IsWellFormed = IsWellFormed,
+                RejectExpression = RejectExpression,
+            };
         }
 
         /// <summary>
@@ -101,34 +112,34 @@ namespace Markovify.NET
         /// </summary>
         /// <param name="inputText">The sourcce text</param>
         /// <returns>The corpus as a list of lists.</returns>
-        IEnumerable<IEnumerable<string>> GenerateCorpus(string inputText)
+        static IEnumerable<IEnumerable<string>> GenerateCorpus(
+            string inputText, Regex rejectExpression)
         {
             return Split.IntoSentences(inputText)
-                .Where(TestSentenceInput)
+                .Where(sentence => TestSentenceInput(sentence, rejectExpression))
                 .Select(Split.IntoWords);
         }
 
         /// <summary>
-        ///   A basic sentence filter. The default rejects sentences that contain
-        ///   the type of punctuation that would look strange on its own in a randomly
-        ///   generated sentence.
+        ///   A basic sentence filter. It will reject empty or whitespace strings
+        ///   that (optionally) match a given regular expression.
         /// </summary>
-        /// <param name="sentence">The sentence to test.</param>
+        /// <param name="sentence">
+        ///   The sentence to test.
+        /// </param>
+        /// <param name="rejectExpression">
+        ///   The expression which will reject sentences that match it.
+        /// </param>
         /// <returns><c>true</c> if the sentence is suitable for the model, <c>false</c> otherwise.</returns>
-        bool TestSentenceInput(string sentence)
+        static bool TestSentenceInput(string sentence, Regex rejectExpression)
         {
             if (sentence.Trim().Length == 0)
                 return false;
 
-            return !mbIsWellFormed || !mRejectExpression.IsMatch(sentence);
+            return rejectExpression == null || !rejectExpression.IsMatch(sentence);
         }
 
-        readonly bool mbIsWellFormed;
-        readonly Regex mRejectExpression;
-        readonly bool mbRetainOriginal;
-        readonly int mbStateSize;
-        readonly IEnumerable<IEnumerable<string>> mParsedSentences;
-        readonly string mRejoinedText;
-        readonly Chain mChain;
+        static readonly Regex DefaultRejectExpression = new Regex(
+            @"(^')|('$)|\s'|'\s|[""(\(\)\[\])]", RegexOptions.Compiled);
     }
 }
