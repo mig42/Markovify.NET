@@ -21,7 +21,7 @@ indent_size = 2
 indent_size = 2
 
 # Powershell files
-[*.ps1]
+[*.ps{d,m,}1]
 indent_size = 2
 
 # Shell script files
