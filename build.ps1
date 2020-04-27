@@ -33,6 +33,6 @@ if ($PSCmdlet.ParameterSetName -eq 'Help') {
 } else {
   Set-BuildEnvironment -Force -BuildOutput "$PSScriptRoot/artifacts"
 
-  Invoke-psake -buildFile $psakeFile -taskList $Task -nologo -properties $Properties
+  Invoke-Psake -BuildFile $psakeFile -TaskList $Task -NoLogo -Properties $Properties
   exit ([int](-not $psake.build_success))
 }
