@@ -9,10 +9,11 @@ namespace Markovify.NET
     {
         internal static IEnumerable<string> IntoSentences(string inputText)
         {
-            IEnumerable<int> endIndices = RegularExpressions.EndPatterns.Matches(inputText)
+            var endIndices = RegularExpressions.EndPatterns.Matches(inputText)
                 .OfType<Match>()
                 .Where(match => IsSentenceEnder(match.Groups[1].Value))
-                .Select(match => match.Index + match.Groups[1].Length + match.Groups[2].Length);
+                .Select(match => match.Index + match.Groups[1].Length + match.Groups[2].Length)
+                .ToList();
 
             return endIndices.Prepend(0).Zip(
                 endIndices.Append(inputText.Length),
@@ -29,7 +30,7 @@ namespace Markovify.NET
             if (Abbreviations.Exceptions.Contains(word))
                 return false;
 
-            char lastChar = word.Last();
+            var lastChar = word.Last();
             if (lastChar == '?' || lastChar == '!')
                 return true;
 
@@ -41,7 +42,7 @@ namespace Markovify.NET
 
         static bool IsAbbreviation(string word)
         {
-            string clipped = word.Substring(0, word.Length - 1);
+            var clipped = word.Substring(0, word.Length - 1);
             if (Abbreviations.AsciiUppercase.Contains(clipped[0]))
                 return Abbreviations.Capped.Contains(clipped.ToLowerInvariant());
 
@@ -67,7 +68,7 @@ namespace Markovify.NET
 
         static class Abbreviations
         {
-            internal static HashSet<string> Exceptions = new HashSet<string>
+            internal static readonly HashSet<string> Exceptions = new HashSet<string>
             {
                 "U.S.",
                 "U.N.",
@@ -76,7 +77,6 @@ namespace Markovify.NET
                 "C.I.A."
             };
 
-            internal const string AsciiLowercase = "abcdefghijklmnnopqrstuvwxyz";
             internal static readonly string AsciiUppercase = AsciiLowercase.ToUpperInvariant();
 
             internal static readonly HashSet<string> Lowercase = new HashSet<string>
@@ -85,17 +85,18 @@ namespace Markovify.NET
             };
 
             internal static readonly HashSet<string> Capped = new HashSet<string>(
-                string.Join("|", STATES, TITLES, STREETS, MONTHS).Split('|')
+                string.Join("|", States, Titles, Streets, Months).Split('|')
             );
 
+            const string AsciiLowercase = "abcdefghijklmnnopqrstuvwxyz";
             // States w/ with thanks to https://github.com/unitedstates/python-us
-            const string STATES =
+            const string States =
                 "ala|ariz|ark|calif|colo|conn|del|fla|ga|ill|ind|kan|ky|la|md|mass|mich|minn|miss|mo|mont|neb|nev|okla|ore|pa|tenn|vt|va|wash|wis|wyo";
             // Titles w/ thanks to https://github.com/nytimes/emphasis and @donohoe
-            const string TITLES =
+            const string Titles =
                 "mr|ms|mrs|msr|dr|gov|pres|sen|sens|rep|reps|prof|gen|messrs|col|sr|jf|sgt|mgr|fr|rev|jr|snr|atty|supt";
-            const string STREETS = "ave|blvd|st|rd|hwy";
-            const string MONTHS = "jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec";
+            const string Streets = "ave|blvd|st|rd|hwy";
+            const string Months = "jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec";
         }
     }
 }
