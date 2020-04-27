@@ -10,6 +10,7 @@
     <RepositoryUrl>https://github.com/mig42/Markovify.NET</RepositoryUrl>
     <OutputPath>../../artifacts</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <PropertyGroup>
