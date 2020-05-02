@@ -10,20 +10,50 @@ namespace Markovify.NET
         {
             return new Chain(stateSize).Compile(sentences);
         }
-        
+
         Chain(int stateSize)
         {
             _stateSize = stateSize;
         }
 
+        internal IEnumerable<string> GenerateSentence()
+        {
+            Queue<string> state = new Queue<string>(Enumerable.Repeat(Tokens.Begin, _stateSize));
+            while (true)
+            {
+                string nextWord = GetNextWord(state);
+                if (nextWord == Tokens.End)
+                    yield break;
+
+                state.Dequeue();
+                state.Enqueue(nextWord);
+                yield return nextWord;
+            }
+        }
+
+        string GetNextWord(IEnumerable<string> fromWords)
+        {
+            Index index = new Index(fromWords.ToArray());
+            return _model.TryGetValue(index, out var transitions)
+                ? transitions.GetRandom()
+                : Tokens.End;
+        }
+
         Chain Compile(List<List<string>> parsedSentences)
         {
+            string[] start = Enumerable.Repeat(Tokens.Begin, _stateSize).ToArray();
+            if (!parsedSentences.Any())
+            {
+                AddToModel(new Index(start), Tokens.End);
+                return this;
+            }
+
             foreach (var sentence in parsedSentences)
             {
                 if (sentence.Any())
                     continue;
-                
-                Queue<string> indexWords = new Queue<string>(Enumerable.Repeat(Tokens.Begin, _stateSize));
+
+                Queue<string> indexWords = new Queue<string>(start);
                 foreach (var word in sentence)
                 {
                     AddToModel(new Index(indexWords.ToArray()), word);
@@ -47,7 +77,7 @@ namespace Markovify.NET
 
             nextValues.AddWord(word, 1);
         }
-        
+
         readonly Dictionary<Index, Transitions> _model = new Dictionary<Index, Transitions>();
         readonly int _stateSize;
 
@@ -75,7 +105,7 @@ namespace Markovify.NET
                     _hashCode,
                     (accumulate, current) => accumulate ^ current.GetHashCode());
             }
-            
+
             bool IEquatable<Index>.Equals(Index other)
             {
                 if (_words.Length != other._words.Length)
@@ -110,6 +140,17 @@ namespace Markovify.NET
 
                 for (var i = wordIndex; i < _accumulatedWeights.Count; i++)
                     _accumulatedWeights[i] += weight;
+            }
+
+            public string GetRandom()
+            {
+                Random random = new Random();
+                var targetWeight = random.Next(1, _accumulatedWeights.LastOrDefault());
+                var index = _accumulatedWeights.FindIndex(accWeight => targetWeight <= accWeight);
+
+                return index != -1
+                    ? _words[index]
+                    : Tokens.End;
             }
 
             readonly List<string> _words = new List<string>();
