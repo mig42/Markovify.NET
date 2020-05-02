@@ -20,9 +20,9 @@ namespace Markovify.NET
                 (start, end) => inputText.Substring(start, end - start));
         }
 
-        internal static IEnumerable<string> IntoWords(string sentence)
+        internal static List<string> IntoWords(string sentence)
         {
-            return RegularExpressions.WordSplit.Split(sentence);
+            return RegularExpressions.WordSplit.Split(sentence).ToList();
         }
 
         static bool IsSentenceEnder(string word)
