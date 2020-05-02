@@ -54,7 +54,7 @@ namespace Markovify.NET
         {
             if (stateSize < 1)
                 return Empty;
-            
+
             if (rejectExpression == null && isWellFormed)
                 rejectExpression = DefaultRejectExpression;
 
