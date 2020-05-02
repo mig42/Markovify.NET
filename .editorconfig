@@ -6,6 +6,7 @@ root = true
 # Don't use tabs for indentation.
 [*]
 indent_style = space
+trim_trailing_whitespace = true
 # (Please don't specify an indent_size here; that has too many unintended consequences.)
 
 # XML project files
@@ -21,7 +22,7 @@ indent_size = 2
 indent_size = 2
 
 # Powershell files
-[*.ps{d,m,}1]
+[*.{psd,psm,ps}1]
 indent_size = 2
 
 # Shell script files
