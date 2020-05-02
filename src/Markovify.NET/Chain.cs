@@ -6,7 +6,7 @@ namespace Markovify.NET
 {
     public class Chain
     {
-        public static Chain FromSentences(IEnumerable<IEnumerable<string>> sentences, int stateSize)
+        public static Chain FromSentences(List<List<string>> sentences, int stateSize)
         {
             return new Chain(stateSize).Compile(sentences);
         }
@@ -16,35 +16,47 @@ namespace Markovify.NET
             _stateSize = stateSize;
         }
 
-        Chain Compile(IEnumerable<IEnumerable<string>> parsedSentences)
+        Chain Compile(List<List<string>> parsedSentences)
         {
             foreach (var sentence in parsedSentences)
             {
+                if (sentence.Any())
+                    continue;
+                
                 Queue<string> indexWords = new Queue<string>(Enumerable.Repeat(Tokens.Begin, _stateSize));
                 foreach (var word in sentence)
                 {
-                    Index index = new Index(indexWords.ToArray());
-                    if (!_model.TryGetValue(index, out var nextValues))
-                    {
-                        nextValues = new HashSet<string>();
-                        _model.Add(index, nextValues);
-                    };
-                    nextValues.Add(word);
+                    AddToModel(new Index(indexWords.ToArray()), word);
+                    indexWords.Enqueue(word);
+                    indexWords.Dequeue();
                 }
+
+                AddToModel(new Index(indexWords.ToArray()), Tokens.End);
             }
 
             return this;
         }
 
-        readonly Dictionary<Index, HashSet<string>> _model = new Dictionary<Index, HashSet<string>>();
+        void AddToModel(Index index, string word)
+        {
+            if (!_model.TryGetValue(index, out var nextValues))
+            {
+                nextValues = new Transitions();
+                _model.Add(index, nextValues);
+            };
+
+            nextValues.AddWord(word, 1);
+        }
+        
+        readonly Dictionary<Index, Transitions> _model = new Dictionary<Index, Transitions>();
         readonly int _stateSize;
 
         public static readonly Chain Empty = new Chain(0);
 
         static class Tokens
         {
-            internal const string Begin = "_BEGIN_";
-            internal const string End = "_END_";
+            internal const string Begin = "__BEGIN__";
+            internal const string End = "__END__";
         }
 
         class Index : IEquatable<Index>
@@ -81,6 +93,27 @@ namespace Markovify.NET
             readonly int _hashCode;
 
             const int EmptyHashCode = -1;
+        }
+
+        class Transitions
+        {
+            internal void AddWord(string word, int weight)
+            {
+                var wordIndex = _words.IndexOf(word);
+
+                if (wordIndex == -1)
+                {
+                    _words.Add(word);
+                    _accumulatedWeights.Add(_accumulatedWeights.LastOrDefault() + weight);
+                    return;
+                }
+
+                for (var i = wordIndex; i < _accumulatedWeights.Count; i++)
+                    _accumulatedWeights[i] += weight;
+            }
+
+            readonly List<string> _words = new List<string>();
+            readonly List<int> _accumulatedWeights = new List<int>();
         }
     }
 }
