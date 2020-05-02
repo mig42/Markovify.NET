@@ -81,12 +81,13 @@ namespace Markovify.NET
         /// <param name="inputText">The source text</param>
         /// <param name="rejectExpression">The expression to reject</param>
         /// <returns>The corpus as a list of lists.</returns>
-        static IEnumerable<IEnumerable<string>> GenerateCorpus(
+        static List<List<string>> GenerateCorpus(
             string inputText, Regex rejectExpression)
         {
             return Split.IntoSentences(inputText)
                 .Where(sentence => TestSentenceInput(sentence, rejectExpression))
-                .Select(Split.IntoWords);
+                .Select(Split.IntoWords)
+                .ToList();
         }
 
         /// <summary>
