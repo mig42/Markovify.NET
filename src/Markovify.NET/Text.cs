@@ -13,16 +13,21 @@ namespace Markovify.NET
     public class Text
     {
         [JsonProperty("chain")]
-        public Chain Chain { get; set; }
+        public Chain Chain { get; set; } = Chain.Empty;
 
         [JsonProperty("sourceText")]
-        public string SourceText { get; set; }
+        public string SourceText { get; set; } = string.Empty;
 
         [JsonProperty("isWellFormed")]
         public bool IsWellFormed { get; set; }
 
         [JsonProperty("rejectExpression")]
         public Regex RejectExpression { get; set; } = DefaultRejectExpression;
+
+        public static readonly Text Empty = new Text();
+
+        public static readonly Regex DefaultRejectExpression = new Regex(
+            @"(^')|('$)|\s'|'\s|[""(\(\)\[\])]", RegexOptions.Compiled);
 
         /// <summary>
         /// Build the text from its source.
@@ -52,7 +57,7 @@ namespace Markovify.NET
             bool isWellFormed = true,
             Regex rejectExpression = null)
         {
-            if (stateSize < 1)
+            if (string.IsNullOrEmpty(inputText) || stateSize < 1)
                 return Empty;
 
             rejectExpression ??= DefaultRejectExpression;
@@ -144,15 +149,5 @@ namespace Markovify.NET
 
             return true;
         }
-
-        static readonly Regex DefaultRejectExpression = new Regex(
-            @"(^')|('$)|\s'|'\s|[""(\(\)\[\])]", RegexOptions.Compiled);
-
-        static readonly Text Empty = new Text
-        {
-            Chain = Chain.Empty,
-            RejectExpression = DefaultRejectExpression,
-            SourceText = string.Empty
-        };
     }
 }
