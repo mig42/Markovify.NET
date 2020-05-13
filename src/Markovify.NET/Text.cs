@@ -55,8 +55,7 @@ namespace Markovify.NET
             if (stateSize < 1)
                 return Empty;
 
-            if (rejectExpression == null && isWellFormed)
-                rejectExpression = DefaultRejectExpression;
+            rejectExpression ??= DefaultRejectExpression;
 
             var corpus = GenerateCorpus(
                 inputText, isWellFormed ? rejectExpression : null);
@@ -73,6 +72,21 @@ namespace Markovify.NET
             };
         }
 
+        public string? MakeSentence(MakeSentenceOptions options)
+        {
+            for (var i = 0; i < options.Tries; i++)
+            {
+                List<string> sentence = Chain.GenerateSentence();
+                if (options.MaxWords.HasValue && sentence.Count > options.MaxWords)
+                    continue;
+
+                if (!options.TestOutput || TestOutput(sentence, options))
+                    return string.Join(" ", sentence);
+            }
+
+            return null;
+        }
+
         /// <summary>
         ///   Given a text string, returns a list of lists. That is, a list of "sentences",
         ///   each of which is a list of words. Before splitting into words, the sentences
@@ -82,7 +96,7 @@ namespace Markovify.NET
         /// <param name="rejectExpression">The expression to reject</param>
         /// <returns>The corpus as a list of lists.</returns>
         static List<List<string>> GenerateCorpus(
-            string inputText, Regex rejectExpression)
+            string inputText, Regex? rejectExpression)
         {
             return Split.IntoSentences(inputText)
                 .Where(sentence => TestSentenceInput(sentence, rejectExpression))
@@ -101,12 +115,21 @@ namespace Markovify.NET
         ///   The expression which will reject sentences that match it.
         /// </param>
         /// <returns><c>true</c> if the sentence is suitable for the model, <c>false</c> otherwise.</returns>
-        static bool TestSentenceInput(string sentence, Regex rejectExpression)
+        static bool TestSentenceInput(string sentence, Regex? rejectExpression)
         {
             if (sentence.Trim().Length == 0)
                 return false;
 
             return rejectExpression == null || !rejectExpression.IsMatch(sentence);
+        }
+
+        bool TestOutput(List<string> sentence, MakeSentenceOptions options)
+        {
+            if (string.IsNullOrEmpty(SourceText))
+                return true;
+
+            // TODO
+            throw new NotImplementedException();
         }
 
         static readonly Regex DefaultRejectExpression = new Regex(

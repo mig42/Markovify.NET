@@ -16,18 +16,19 @@ namespace Markovify.NET
             _stateSize = stateSize;
         }
 
-        internal IEnumerable<string> GenerateSentence()
+        internal List<string> GenerateSentence()
         {
             Queue<string> state = new Queue<string>(Enumerable.Repeat(Tokens.Begin, _stateSize));
+            List<string> result = new List<string>();
             while (true)
             {
                 string nextWord = GetNextWord(state);
                 if (nextWord == Tokens.End)
-                    yield break;
+                    return result;
 
                 state.Dequeue();
                 state.Enqueue(nextWord);
-                yield return nextWord;
+                result.Add(nextWord);
             }
         }
 
