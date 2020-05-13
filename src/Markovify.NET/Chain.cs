@@ -8,6 +8,13 @@ namespace Markovify.NET
     {
         public static Chain FromSentences(List<List<string>> sentences, int stateSize)
         {
+            if (sentences == null ||
+                sentences.Count == 0 ||
+                stateSize < 1 ||
+                !sentences.Any(words => words.Any()))
+            {
+                return Empty;
+            }
             return new Chain(stateSize).Compile(sentences);
         }
 
@@ -16,7 +23,7 @@ namespace Markovify.NET
             _stateSize = stateSize;
         }
 
-        internal List<string> GenerateSentence()
+        public List<string> GenerateSentence()
         {
             Queue<string> state = new Queue<string>(Enumerable.Repeat(Tokens.Begin, _stateSize));
             List<string> result = new List<string>();
@@ -109,10 +116,7 @@ namespace Markovify.NET
 
             bool IEquatable<Index>.Equals(Index other)
             {
-                if (_words.Length != other._words.Length)
-                    return false;
-
-                return _words.SequenceEqual(other._words);
+                return _words.Length == other._words.Length && _words.SequenceEqual(other._words);
             }
 
             public override int GetHashCode()

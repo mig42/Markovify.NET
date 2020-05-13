@@ -30,6 +30,7 @@
       </e>
       <e p="tests" t="Include">
         <e p="Markovify.NET.Tests" t="IncludeRecursive">
+          <e p="ChainTests.cs" t="Include" />
           <e p="Markovify.NET.Tests.csproj" t="IncludeRecursive" />
           <e p="TextTests.cs" t="Include" />
           <e p="bin" t="ExcludeRecursive" />
