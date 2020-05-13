@@ -11,6 +11,7 @@
     <OutputPath>../../artifacts</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <Nullable>enable</Nullable>
+    <LangVersion>default</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup>
