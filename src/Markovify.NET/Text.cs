@@ -128,8 +128,21 @@ namespace Markovify.NET
             if (string.IsNullOrEmpty(SourceText))
                 return true;
 
-            // TODO
-            throw new NotImplementedException();
+            var overlapMax = Math.Min(
+                options.MaxOverlapWords,
+                (int)Math.Round(options.MaxOverlapRatio * sentence.Count));
+
+            var sequenceCount = Math.Max(sentence.Count - overlapMax, 1);
+            var sequenceLength = Math.Min(sentence.Count, overlapMax);
+
+            for (var i = 0; i < sequenceCount; i++)
+            {
+                var sequence = string.Join(" ", sentence.GetRange(i, sequenceLength));
+                if (SourceText.IndexOf(sequence, StringComparison.OrdinalIgnoreCase) != -1)
+                    return false;
+            }
+
+            return true;
         }
 
         static readonly Regex DefaultRejectExpression = new Regex(
