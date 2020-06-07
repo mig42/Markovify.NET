@@ -55,7 +55,7 @@ namespace Markovify.NET
             int stateSize = 2,
             bool retainOriginal = true,
             bool isWellFormed = true,
-            Regex rejectExpression = null)
+            Regex? rejectExpression = null)
         {
             if (string.IsNullOrEmpty(inputText) || stateSize < 1)
                 return Empty;
