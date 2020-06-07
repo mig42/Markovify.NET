@@ -12,7 +12,7 @@ namespace Markovify.NET
             var endIndices = RegularExpressions.EndPatterns.Matches(inputText)
                 .OfType<Match>()
                 .Where(match => IsSentenceEnder(match.Groups[1].Value))
-                .Select(match => match.Index + match.Groups[1].Length + match.Groups[2].Length)
+                .Select(match => match.Index + match.Groups[0].Length)
                 .ToList();
 
             return endIndices.Prepend(0).Zip(
@@ -22,7 +22,9 @@ namespace Markovify.NET
 
         internal static List<string> IntoWords(string sentence)
         {
-            return RegularExpressions.WordSplit.Split(sentence).ToList();
+            return RegularExpressions.WordSplit.Split(sentence)
+                .Where(word => !string.IsNullOrWhiteSpace(word))
+                .ToList();
         }
 
         static bool IsSentenceEnder(string word)
