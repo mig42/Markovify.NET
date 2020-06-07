@@ -31,6 +31,7 @@
       <e p="tests" t="Include">
         <e p="Markovify.NET.Tests" t="IncludeRecursive">
           <e p="ChainTests.cs" t="Include" />
+          <e p="Data.cs" t="Include" />
           <e p="Markovify.NET.Tests.csproj" t="IncludeRecursive" />
           <e p="TextTests.cs" t="Include" />
           <e p="bin" t="ExcludeRecursive" />
@@ -40,6 +41,10 @@
                 <e p="Markovify.NET.Tests.AssemblyInfo.cs" t="Include" />
               </e>
             </e>
+          </e>
+          <e p="texts" t="Include">
+            <e p="sherlock.txt" t="Include" />
+            <e p="single_transitions_only.txt" t="Include" />
           </e>
         </e>
       </e>
