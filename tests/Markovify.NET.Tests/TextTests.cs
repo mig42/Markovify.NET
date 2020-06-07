@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Text.RegularExpressions;
 using FluentAssertions;
 using Xunit;
@@ -70,6 +71,61 @@ namespace Markovify.NET.Tests
 
         public class MakeSentence
         {
+            [Fact]
+            public void SampleTextAndDefaultOptions_ShouldReturnSentence()
+            {
+                var text = Text.Build(Data.GetSherlock());
+
+                text.Should().NotBe(Text.Empty);
+
+                var sentence = text.MakeSentence(new MakeSentenceOptions());
+                sentence.Should().NotBeNullOrEmpty();
+                sentence!.Remove(1).Should().NotBeNullOrWhiteSpace();
+                sentence.Substring(sentence.Length - 1).Should().NotBeNullOrWhiteSpace();
+            }
+
+            [Theory]
+            [InlineData(10)]
+            [InlineData(15)]
+            [InlineData(20)]
+            public void SampleTextWithWordLimit_ShouldReturnThatAmountOfWords(int wordCount)
+            {
+                var text = Text.Build(Data.GetSherlock());
+
+                text.Should().NotBe(Text.Empty);
+
+                var sentence = text.MakeSentence(new MakeSentenceOptions
+                {
+                    MaxWords = wordCount,
+                    Tries = 50,
+                });
+                sentence.Should().NotBeNullOrEmpty();
+                sentence!.Split(' ').Length.Should().BeLessOrEqualTo(wordCount);
+            }
+
+            [Fact]
+            public void SimplisticText_ShouldNotMakeSentence()
+            {
+                var text = Text.Build(Data.GetSingleTransitionsOnly());
+                text.Should().NotBe(Text.Empty);
+
+                var sentence = text.MakeSentence(new MakeSentenceOptions());
+                sentence.Should().BeNull();
+            }
+
+            [Fact]
+            public void SimplisticTextWithoutTestOutput_ShouldMakeSentence()
+            {
+                var text = Text.Build(Data.GetSingleTransitionsOnly());
+                text.Should().NotBe(Text.Empty);
+
+                var sentence = text.MakeSentence(new MakeSentenceOptions
+                {
+                    TestOutput = false,
+                    Tries = 1,
+                });
+                sentence.Should().NotBeNullOrEmpty();
+            }
         }
     }
 }

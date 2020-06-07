@@ -20,4 +20,13 @@
     <ProjectReference Include="../../src/Markovify.NET/Markovify.NET.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="texts\sherlock.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="texts\single_transitions_only.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
