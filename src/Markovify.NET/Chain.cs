@@ -6,6 +6,8 @@ namespace Markovify.NET
 {
     public class Chain
     {
+        public int ModelSize => _model.Count;
+
         public static Chain FromSentences(List<List<string>> sentences, int stateSize)
         {
             if (sentences == null ||
@@ -58,7 +60,7 @@ namespace Markovify.NET
 
             foreach (var sentence in parsedSentences)
             {
-                if (sentence.Any())
+                if (!sentence.Any())
                     continue;
 
                 Queue<string> indexWords = new Queue<string>(start);
@@ -81,7 +83,7 @@ namespace Markovify.NET
             {
                 nextValues = new Transitions();
                 _model.Add(index, nextValues);
-            };
+            }
 
             nextValues.AddWord(word, 1);
         }
