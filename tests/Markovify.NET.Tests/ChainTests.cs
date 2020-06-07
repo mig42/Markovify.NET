@@ -81,7 +81,26 @@ namespace Markovify.NET.Tests
 
                 chain.ModelSize.Should().Be(sentence1.Count + 2);
                 actualSentence.SkipLast(1).Should().ContainInOrder(sentence1.SkipLast(1));
-                actualSentence.Last().Should().BeOneOf(sentence1.TakeLast(1).Concat(sentence2.TakeLast(1)));
+                actualSentence.Last().Should().BeOneOf(
+                    sentence1.TakeLast(1).Concat(sentence2.TakeLast(1)));
+            }
+
+            [Fact]
+            public void TwoSentencesWithDifferentFirstWord_ShouldBuildOneOrTheOther()
+            {
+                List<string> sentence1 = new List<string> {"This", "is", "a", "sentence."};
+                List<string> sentence2 =
+                    Enumerable.Repeat("That", 1).Concat(sentence1.Skip(1)).ToList();
+
+                Chain chain = Chain.FromSentences(
+                    new List<List<string>> { sentence1, sentence2 },
+                    1);
+
+                List<string> actualSentence = chain.GenerateSentence();
+
+                chain.ModelSize.Should().Be(sentence1.Count + 2);
+                actualSentence.Skip(1).Should().ContainInOrder(sentence1.Skip(1));
+                actualSentence.First().Should().BeOneOf(sentence1.Take(1).Concat(sentence2.Take(1)));
             }
         }
     }
