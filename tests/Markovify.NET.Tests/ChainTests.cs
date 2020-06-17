@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using FluentAssertions;
@@ -67,8 +68,10 @@ namespace Markovify.NET.Tests
                 actualSentence.Should().ContainInOrder(expectedSentence);
             }
 
-            [Fact]
-            public void TwoSentencesWithDifferentLastWord_ShouldBuildOneOrTheOther()
+            [Theory]
+            [InlineData(3, "This is a sentence.")]
+            [InlineData(100, "This is a sample.")]
+            public void TwoSentencesWithDifferentLastWord_ShouldBuildRandom(int seed, string expected)
             {
                 List<string> sentence1 = new List<string> {"This", "is", "a", "sentence."};
                 List<string> sentence2 = sentence1.SkipLast(1).Append("sample.").ToList();
@@ -77,16 +80,17 @@ namespace Markovify.NET.Tests
                     new List<List<string>> { sentence1, sentence2 },
                     1);
 
-                List<string> actualSentence = chain.GenerateSentence();
+                chain.SetRandom(new CustomRandom(seed));
+                string actual = string.Join(' ', chain.GenerateSentence());
 
                 chain.ModelSize.Should().Be(sentence1.Count + 2);
-                actualSentence.SkipLast(1).Should().ContainInOrder(sentence1.SkipLast(1));
-                actualSentence.Last().Should().BeOneOf(
-                    sentence1.TakeLast(1).Concat(sentence2.TakeLast(1)));
+                actual.Should().Be(expected);
             }
 
-            [Fact]
-            public void TwoSentencesWithDifferentFirstWord_ShouldBuildOneOrTheOther()
+            [Theory]
+            [InlineData(3, "This is a sentence.")]
+            [InlineData(100, "That is a sentence.")]
+            public void TwoSentencesWithDifferentFirstWord_ShouldBuildRandom(int seed, string expected)
             {
                 List<string> sentence1 = new List<string> {"This", "is", "a", "sentence."};
                 List<string> sentence2 =
@@ -96,11 +100,11 @@ namespace Markovify.NET.Tests
                     new List<List<string>> { sentence1, sentence2 },
                     1);
 
-                List<string> actualSentence = chain.GenerateSentence();
+                chain.SetRandom(new CustomRandom(seed));
+                string actual = string.Join(' ', chain.GenerateSentence());
 
                 chain.ModelSize.Should().Be(sentence1.Count + 2);
-                actualSentence.Skip(1).Should().ContainInOrder(sentence1.Skip(1));
-                actualSentence.First().Should().BeOneOf(sentence1.Take(1).Concat(sentence2.Take(1)));
+                actual.Should().Be(expected);
             }
         }
     }
