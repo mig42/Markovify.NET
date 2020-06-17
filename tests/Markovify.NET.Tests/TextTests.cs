@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using FluentAssertions;
@@ -71,17 +72,53 @@ namespace Markovify.NET.Tests
 
         public class MakeSentence
         {
-            [Fact]
-            public void SampleTextAndDefaultOptions_ShouldReturnSentence()
+            public static IEnumerable<object[]> RandomSentencesData()
+            {
+                yield return new object[]
+                {
+                    23057,
+                    "It was a cracked edge, where a few days I was informed by the sunlight; " +
+                    "but since your shaving is less illuminated than the Assizes.",
+                };
+                yield return new object[]
+                {
+                    2782232,
+                    "You must also put in the morning when the facts came out, it would be in " +
+                    "his right shirt-sleeve, but he is right."
+                };
+                yield return new object[]
+                {
+                    83599,
+                    "Ferguson appeared to be spent in an angle of the average story-teller."
+                };
+                yield return new object[]
+                {
+                    2020061721,
+                    "I keep it only to be too limp to get to him to step in."
+                };
+                yield return new object[]
+                {
+                    883727773,
+                    "I know I ought to be something out of the most difficult to part from them."
+                };
+            }
+
+            [Theory]
+            [MemberData(nameof(RandomSentencesData))]
+            public void SampleTextAndDefaultOptions_ShouldReturnSentence(
+                int seed, string expected)
             {
                 var text = Text.Build(Data.GetSherlock());
 
                 text.Should().NotBe(Text.Empty);
 
-                var sentence = text.MakeSentence(new MakeSentenceOptions());
-                sentence.Should().NotBeNullOrEmpty();
-                sentence!.Remove(1).Should().NotBeNullOrWhiteSpace();
-                sentence.Substring(sentence.Length - 1).Should().NotBeNullOrWhiteSpace();
+                text.Chain.SetRandom(new CustomRandom((seed)));
+
+                var actual = text.MakeSentence(new MakeSentenceOptions());
+                actual.Should().NotBeNullOrEmpty();
+                actual.Should().NotStartWith(" ");
+                actual.Should().NotEndWith(" ");
+                actual.Should().Be(expected);
             }
 
             [Theory]
