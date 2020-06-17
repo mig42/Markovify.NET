@@ -25,6 +25,12 @@ namespace Markovify.NET
             _stateSize = stateSize;
         }
 
+        public void SetRandom(IRandom random)
+        {
+            if (random != null)
+                _random = random;
+        }
+
         public List<string> GenerateSentence()
         {
             Queue<string> state = new Queue<string>(Enumerable.Repeat(Tokens.Begin, _stateSize));
@@ -45,7 +51,7 @@ namespace Markovify.NET
         {
             Index index = new Index(fromWords.ToArray());
             return _model.TryGetValue(index, out var transitions)
-                ? transitions.GetRandom()
+                ? transitions.GetRandom(_random)
                 : Tokens.End;
         }
 
@@ -90,6 +96,7 @@ namespace Markovify.NET
 
         readonly Dictionary<Index, Transitions> _model = new Dictionary<Index, Transitions>();
         readonly int _stateSize;
+        IRandom _random = new DefaultRandom();
 
         public static readonly Chain Empty = new Chain(0);
 
@@ -149,11 +156,10 @@ namespace Markovify.NET
                     _accumulatedWeights[i] += weight;
             }
 
-            public string GetRandom()
+            public string GetRandom(IRandom random)
             {
-                Random random = new Random();
-                var targetWeight = random.Next(1, _accumulatedWeights.LastOrDefault());
-                var index = _accumulatedWeights.FindIndex(accWeight => targetWeight <= accWeight);
+                var targetWeight = random.NextNatural(_accumulatedWeights.LastOrDefault());
+                var index = _accumulatedWeights.FindIndex(accWeight => targetWeight < accWeight);
 
                 return index != -1
                     ? _words[index]
