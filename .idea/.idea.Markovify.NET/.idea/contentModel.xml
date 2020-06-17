@@ -17,6 +17,7 @@
       <e p="src" t="Include">
         <e p="Markovify.NET" t="IncludeRecursive">
           <e p="Chain.cs" t="Include" />
+          <e p="IRandom.cs" t="Include" />
           <e p="MakeSentenceOptions.cs" t="Include" />
           <e p="Markovify.NET.csproj" t="IncludeRecursive" />
           <e p="Split.cs" t="Include" />
@@ -31,6 +32,7 @@
       <e p="tests" t="Include">
         <e p="Markovify.NET.Tests" t="IncludeRecursive">
           <e p="ChainTests.cs" t="Include" />
+          <e p="CustomRandom.cs" t="Include" />
           <e p="Data.cs" t="Include" />
           <e p="Markovify.NET.Tests.csproj" t="IncludeRecursive" />
           <e p="TextTests.cs" t="Include" />
